@@ -1,6 +1,3 @@
--- Set <space> as the leader key
--- See `:help mapleader`
---  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -9,9 +6,7 @@ vim.g.maplocalleader = ' '
 --    `:help lazy.nvim.txt` for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn
-      .system { 'git', 'clone', '--filter=blob:none', 'https://github.com/folke/lazy.nvim.git', '--branch=stable', -- latest stable release
-        lazypath }
+  vim.fn.system { 'git', 'clone', '--filter=blob:none', 'https://github.com/folke/lazy.nvim.git', '--branch=stable', lazypath }
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -174,6 +169,10 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
   'catppuccin/nvim',
   name = 'catppuccin',
   priority = 1000,
+  opts = {
+    transparent_background = true,
+    term_colors = false,
+  },
   config = function()
     vim.cmd.colorscheme 'catppuccin'
   end
@@ -224,7 +223,7 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
   {
     import = 'custom.plugins'
-  } }, {})
+  }, }, {})
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -426,9 +425,7 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, {
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'elm', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc',
-      'vim', 'bash' },
-
+    ensure_installed = { 'c', 'cpp', 'go', 'elm', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
     auto_install = true,
 
@@ -610,6 +607,7 @@ local servers = {
   -- rust_analyzer = {},
   -- tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
+  tailwindcss = { filetypes_include = { 'css', 'elm', 'html', 'ts', 'tsx' } },
 
   lua_ls = {
     Lua = {
@@ -618,9 +616,9 @@ local servers = {
       },
       telemetry = {
         enable = false
-      }
+      },
       -- NOTE: toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-      -- diagnostics = { disable = { 'missing-fields' } },
+      diagnostics = { disable = { 'missing-fields' } },
     }
   }
 }
