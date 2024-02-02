@@ -1,2 +1,6 @@
-vim.keymap.set("n", "Zz", "<C-w>_<C-w>\|")
-vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+return {
+  vim.keymap.set("n", "<leader>f", vim.lsp.buf.format),
+  vim.keymap.set("n", "<C-b>", function()
+    vim.cmd.Neotree("toggle")
+  end)
+}
