@@ -13,7 +13,7 @@ return {
         statusline = false
       },
       window = {
-        width = 18,
+        width = 24,
       }
     })
   end
