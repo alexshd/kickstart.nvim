@@ -22,19 +22,19 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
   -- Git related plugins
   'tpope/vim-fugitive', 'tpope/vim-rhubarb', -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',                        -- NOTE: This is where your plugins related to LSP can be installed.
+
   --  The configuration is done below. Search for lspconfig to find it below.
   {
     -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
-    dependencies = { -- Automatically install LSPs to stdpath for neovim
-      {
-        'williamboman/mason.nvim',
-        config = true
-      },
+    -- Automatically install LSPs to stdpath for neovim
+    dependencies = {
+      { 'williamboman/mason.nvim', config = true },
 
-      'williamboman/mason-lspconfig.nvim', -- Useful status updates for LSP
+      'williamboman/mason-lspconfig.nvim',
+      -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',       opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -69,11 +69,12 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
 },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim',   opts = {} }, {
+  { 'folke/which-key.nvim', opts = {}
+  }, {
   -- Adds git related signs to the gutter, as well as utilities for managing changes
   'lewis6991/gitsigns.nvim',
+  -- See `:help gitsigns.txt`
   opts = {
-    -- See `:help gitsigns.txt`
     signs = {
       add = { text = '+' },
       change = { text = '~' },
@@ -126,9 +127,7 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
       map('n', '<leader>hp', gs.preview_hunk, { desc = 'preview git hunk' })
       map('n', '<leader>hb', function() gs.blame_line { full = false } end, { desc = 'git blame line' })
       map('n', '<leader>hd', gs.diffthis, { desc = 'git diff against index' })
-      map('n', '<leader>hD', function()
-        gs.diffthis '~'
-      end, { desc = 'git diff against last commit' })
+      map('n', '<leader>hD', function() gs.diffthis '~' end, { desc = 'git diff against last commit' })
 
       -- Toggles
       map('n', '<leader>tb', gs.toggle_current_line_blame, { desc = 'toggle git blame line' })
@@ -143,19 +142,13 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
   name = 'catppuccin',
   priority = 1000,
 
-  config = function()
-    vim.cmd.colorscheme 'catppuccin'
-  end
+  config = function() vim.cmd.colorscheme 'catppuccin' end
 }, {
   -- Set lualine as statusline
   'nvim-lualine/lualine.nvim',
   dependencies = { 'nvim-tree/nvim-web-devicons' },
   -- See `:help lualine.txt`
-  opts = {
-    options = {
-      icons_enabled = true,
-    }
-  }
+  opts = { options = { icons_enabled = true, } }
 }, {
   -- "gc" to comment visual regions/lines
   'numToStr/Comment.nvim',
@@ -171,13 +164,12 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
       return vim.fn.executable 'make' == 1
     end
   } }
+}, {
+  -- Highlight, edit, and navigate code
+  'nvim-treesitter/nvim-treesitter',
+  dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
+  build = ':TSUpdate'
 },
-  {
-    -- Highlight, edit, and navigate code
-    'nvim-treesitter/nvim-treesitter',
-    dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
-    build = ':TSUpdate'
-  },
 
   require 'kickstart.plugins.autoformat', require 'kickstart.plugins.debug',
   { import = 'custom.plugins' },
