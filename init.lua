@@ -18,10 +18,11 @@ vim.opt.rtp:prepend(lazypath)
 --
 --  You can also configure plugins after the setup call,
 --    as they will be available in your neovim runtime.
-require('lazy').setup({                      -- NOTE: First, some plugins that don't require any configuration
+require('lazy').setup({ -- NOTE: First, some plugins that don't require any configuration
   -- Git related plugins
-  'tpope/vim-fugitive', 'tpope/vim-rhubarb', -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-sleuth',                        -- NOTE: This is where your plugins related to LSP can be installed.
+  'tpope/vim-fugitive',
+  'tpope/vim-rhubarb', -- Detect tabstop and shiftwidth automatically
+  'tpope/vim-sleuth',  -- NOTE: This is where your plugins related to LSP can be installed.
 
   --  The configuration is done below. Search for lspconfig to find it below.
   {
@@ -39,139 +40,159 @@ require('lazy').setup({                      -- NOTE: First, some plugins that d
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
     },
-  }, {
-  -- Autocompletion
-  'hrsh7th/nvim-cmp',
-  dependencies = {
-    -- Snippet Engine & its associated nvim-cmp source
-    {
-      'L3MON4D3/LuaSnip',
-      build = (function()
-        -- Build Step is needed for regex support in snippets
-        -- This step is not supported in many windows environments
-        -- Remove the below condition to re-enable on windows
-        if vim.fn.has 'win32' == 1 then
-          return
-        end
-        return 'make install_jsregexp'
-      end)(),
-    },
-
-    'saadparwaiz1/cmp_luasnip',
-
-    -- Adds LSP completion capabilities
-    'hrsh7th/cmp-nvim-lsp',
-    'hrsh7th/cmp-path',
-
-    -- Adds a number of user-friendly snippets
-    'rafamadriz/friendly-snippets',
   },
-},
+  {
+    -- Autocompletion
+    'hrsh7th/nvim-cmp',
+    dependencies = {
+      -- Snippet Engine & its associated nvim-cmp source
+      {
+        'L3MON4D3/LuaSnip',
+        build = (function()
+          -- Build Step is needed for regex support in snippets
+          -- This step is not supported in many windows environments
+          -- Remove the below condition to re-enable on windows
+          if vim.fn.has 'win32' == 1 then
+            return
+          end
+          return 'make install_jsregexp'
+        end)(),
+      },
+
+      'saadparwaiz1/cmp_luasnip',
+
+      -- Adds LSP completion capabilities
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-path',
+
+      -- Adds a number of user-friendly snippets
+      'rafamadriz/friendly-snippets',
+    },
+  },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {}
-  }, {
-  -- Adds git related signs to the gutter, as well as utilities for managing changes
-  'lewis6991/gitsigns.nvim',
-  -- See `:help gitsigns.txt`
-  opts = {
-    signs = {
-      add = { text = '+' },
-      change = { text = '~' },
-      delete = { text = '_' },
-      topdelete = { text = '‾' },
-      changedelete = { text = '~' },
+  { 'folke/which-key.nvim',   opts = {} },
+  {
+    -- Adds git related signs to the gutter, as well as utilities for managing changes
+    'lewis6991/gitsigns.nvim',
+    -- See `:help gitsigns.txt`
+    opts = {
+      signs = {
+        add = { text = '+' },
+        change = { text = '~' },
+        delete = { text = '_' },
+        topdelete = { text = '‾' },
+        changedelete = { text = '~' },
+      },
+      on_attach = function(bufnr)
+        local gs = package.loaded.gitsigns
+
+        local function map(mode, l, r, opts)
+          opts = opts or {}
+          opts.buffer = bufnr
+          vim.keymap.set(mode, l, r, opts)
+        end
+
+        -- Navigation
+        map({ 'n', 'v' }, ']c', function()
+          if vim.wo.diff then
+            return ']c'
+          end
+          vim.schedule(function()
+            gs.next_hunk()
+          end)
+          return '<Ignore>'
+        end, { expr = true, desc = 'Jump to next hunk' })
+
+        map({ 'n', 'v' }, '[c', function()
+          if vim.wo.diff then
+            return '[c'
+          end
+          vim.schedule(function()
+            gs.prev_hunk()
+          end)
+          return '<Ignore>'
+        end, { expr = true, desc = 'Jump to previous hunk' })
+
+        -- Actions
+        -- visual mode
+        map('v', '<leader>hs', function()
+          gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end, { desc = 'stage git hunk' })
+
+        map('v', '<leader>hr', function()
+          gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end, { desc = 'reset git hunk' })
+
+        -- normal mode
+        map('n', '<leader>hs', gs.stage_hunk, { desc = 'git stage hunk' })
+        map('n', '<leader>hr', gs.reset_hunk, { desc = 'git reset hunk' })
+        map('n', '<leader>hS', gs.stage_buffer, { desc = 'git Stage buffer' })
+        map('n', '<leader>hu', gs.undo_stage_hunk, { desc = 'undo stage hunk' })
+        map('n', '<leader>hR', gs.reset_buffer, { desc = 'git Reset buffer' })
+        map('n', '<leader>hp', gs.preview_hunk, { desc = 'preview git hunk' })
+        map('n', '<leader>hb', function()
+          gs.blame_line { full = false }
+        end, { desc = 'git blame line' })
+        map('n', '<leader>hd', gs.diffthis, { desc = 'git diff against index' })
+        map('n', '<leader>hD', function()
+          gs.diffthis '~'
+        end, { desc = 'git diff against last commit' })
+
+        -- Toggles
+        map('n', '<leader>tb', gs.toggle_current_line_blame, { desc = 'toggle git blame line' })
+        map('n', '<leader>td', gs.toggle_deleted, { desc = 'toggle git show deleted' })
+
+        -- Text object
+        map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'select git hunk' })
+      end,
     },
-    on_attach = function(bufnr)
-      local gs = package.loaded.gitsigns
+  },
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 1000,
 
-      local function map(mode, l, r, opts)
-        opts = opts or {}
-        opts.buffer = bufnr
-        vim.keymap.set(mode, l, r, opts)
-      end
+    config = function()
+      vim.cmd.colorscheme 'catppuccin'
+    end,
+  },
+  {
+    -- Set lualine as statusline
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    -- See `:help lualine.txt`
+    opts = { options = { icons_enabled = true } },
+  },
+  {
+    -- "gc" to comment visual regions/lines
+    'numToStr/Comment.nvim',
+    opts = {},
+  },
+  {
+    -- Fuzzy Finder (files, lsp, etc)
+    'nvim-telescope/telescope.nvim',
+    branch = '0.1.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      {
+        'nvim-telescope/telescope-fzf-native.nvim',
+        build = 'make',
+        cond = function()
+          return vim.fn.executable 'make' == 1
+        end,
+      },
+    },
+  },
+  {
+    -- Highlight, edit, and navigate code
+    'nvim-treesitter/nvim-treesitter',
+    dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
+    build = ':TSUpdate',
+  },
 
-      -- Navigation
-      map({ 'n', 'v' }, ']c', function()
-        if vim.wo.diff then
-          return ']c'
-        end
-        vim.schedule(function() gs.next_hunk() end)
-        return '<Ignore>'
-      end, { expr = true, desc = 'Jump to next hunk' })
-
-      map({ 'n', 'v' }, '[c', function()
-        if vim.wo.diff then
-          return '[c'
-        end
-        vim.schedule(function() gs.prev_hunk() end)
-        return '<Ignore>'
-      end, { expr = true, desc = 'Jump to previous hunk' })
-
-      -- Actions
-      -- visual mode
-      map('v', '<leader>hs', function()
-        gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-      end, { desc = 'stage git hunk' })
-
-      map('v', '<leader>hr', function()
-        gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
-      end, { desc = 'reset git hunk' })
-
-      -- normal mode
-      map('n', '<leader>hs', gs.stage_hunk, { desc = 'git stage hunk' })
-      map('n', '<leader>hr', gs.reset_hunk, { desc = 'git reset hunk' })
-      map('n', '<leader>hS', gs.stage_buffer, { desc = 'git Stage buffer' })
-      map('n', '<leader>hu', gs.undo_stage_hunk, { desc = 'undo stage hunk' })
-      map('n', '<leader>hR', gs.reset_buffer, { desc = 'git Reset buffer' })
-      map('n', '<leader>hp', gs.preview_hunk, { desc = 'preview git hunk' })
-      map('n', '<leader>hb', function() gs.blame_line { full = false } end, { desc = 'git blame line' })
-      map('n', '<leader>hd', gs.diffthis, { desc = 'git diff against index' })
-      map('n', '<leader>hD', function() gs.diffthis '~' end, { desc = 'git diff against last commit' })
-
-      -- Toggles
-      map('n', '<leader>tb', gs.toggle_current_line_blame, { desc = 'toggle git blame line' })
-      map('n', '<leader>td', gs.toggle_deleted, { desc = 'toggle git show deleted' })
-
-      -- Text object
-      map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'select git hunk' })
-    end
-  }
-}, {
-  'catppuccin/nvim',
-  name = 'catppuccin',
-  priority = 1000,
-
-  config = function() vim.cmd.colorscheme 'catppuccin' end
-}, {
-  -- Set lualine as statusline
-  'nvim-lualine/lualine.nvim',
-  dependencies = { 'nvim-tree/nvim-web-devicons' },
-  -- See `:help lualine.txt`
-  opts = { options = { icons_enabled = true, } }
-}, {
-  -- "gc" to comment visual regions/lines
-  'numToStr/Comment.nvim',
-  opts = {}
-}, {
-  -- Fuzzy Finder (files, lsp, etc)
-  'nvim-telescope/telescope.nvim',
-  branch = '0.1.x',
-  dependencies = { 'nvim-lua/plenary.nvim', {
-    'nvim-telescope/telescope-fzf-native.nvim',
-    build = 'make',
-    cond = function()
-      return vim.fn.executable 'make' == 1
-    end
-  } }
-}, {
-  -- Highlight, edit, and navigate code
-  'nvim-treesitter/nvim-treesitter',
-  dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
-  build = ':TSUpdate'
-},
-
-  require 'kickstart.plugins.autoformat', require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.autoformat',
+  require 'kickstart.plugins.debug',
   { import = 'custom.plugins' },
 }, {})
 
@@ -222,44 +243,44 @@ vim.o.cursorline = true
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
 vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', {
-  silent = true
+  silent = true,
 })
 
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", {
   expr = true,
-  silent = true
+  silent = true,
 })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", {
   expr = true,
-  silent = true
+  silent = true,
 })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, {
-  desc = 'Go to previous diagnostic message'
+  desc = 'Go to previous diagnostic message',
 })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, {
-  desc = 'Go to next diagnostic message'
+  desc = 'Go to next diagnostic message',
 })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, {
-  desc = 'Open floating diagnostic message'
+  desc = 'Open floating diagnostic message',
 })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, {
-  desc = 'Open diagnostics list'
+  desc = 'Open diagnostics list',
 })
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
 local highlight_group = vim.api.nvim_create_augroup('YankHighlight', {
-  clear = true
+  clear = true,
 })
 vim.api.nvim_create_autocmd('TextYankPost', {
   callback = function()
     vim.highlight.on_yank()
   end,
   group = highlight_group,
-  pattern = '*'
+  pattern = '*',
 })
 
 -- [[ Configure Telescope ]]
@@ -269,10 +290,10 @@ require('telescope').setup {
     mappings = {
       i = {
         ['<C-u>'] = false,
-        ['<C-d>'] = false
-      }
-    }
-  }
+        ['<C-d>'] = false,
+      },
+    },
+  },
 }
 
 -- Enable telescope fzf native, if installed
@@ -295,8 +316,7 @@ local function find_git_root()
 
   -- Find the Git root directory from the current file's path
   if current_dir ~= nil then
-    local git_root =
-        vim.fn.systemlist('git -C ' .. vim.fn.escape(current_dir, ' ') .. ' rev-parse --show-toplevel')[1]
+    local git_root = vim.fn.systemlist('git -C ' .. vim.fn.escape(current_dir, ' ') .. ' rev-parse --show-toplevel')[1]
     if vim.v.shell_error ~= 0 then
       print 'Not a git repository. Searching on current working directory'
       return cwd
@@ -310,7 +330,7 @@ local function live_grep_git_root()
   local git_root = find_git_root()
   if git_root then
     require('telescope.builtin').live_grep {
-      search_dirs = { git_root }
+      search_dirs = { git_root },
     }
   end
 end
@@ -319,56 +339,56 @@ vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
 
 -- See `:help telescope.builtin`
 vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, {
-  desc = '[?] Find recently opened files'
+  desc = '[?] Find recently opened files',
 })
 vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, {
-  desc = '[ ] Find existing buffers'
+  desc = '[ ] Find existing buffers',
 })
 vim.keymap.set('n', '<leader>/', function()
   -- You can pass additional configuration to telescope to change theme, layout, etc.
   require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
     winblend = 10,
-    previewer = false
+    previewer = false,
   })
 end, {
-  desc = '[/] Fuzzily search in current buffer'
+  desc = '[/] Fuzzily search in current buffer',
 })
 
 local function telescope_live_grep_open_files()
   require('telescope.builtin').live_grep {
     grep_open_files = true,
-    prompt_title = 'Live Grep in Open Files'
+    prompt_title = 'Live Grep in Open Files',
   }
 end
 vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, {
-  desc = '[S]earch [/] in Open Files'
+  desc = '[S]earch [/] in Open Files',
 })
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, {
-  desc = '[S]earch [S]elect Telescope'
+  desc = '[S]earch [S]elect Telescope',
 })
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, {
-  desc = 'Search [G]it [F]iles'
+  desc = 'Search [G]it [F]iles',
 })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, {
-  desc = '[S]earch [F]iles'
+  desc = '[S]earch [F]iles',
 })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, {
-  desc = '[S]earch [H]elp'
+  desc = '[S]earch [H]elp',
 })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, {
-  desc = '[S]earch current [W]ord'
+  desc = '[S]earch current [W]ord',
 })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, {
-  desc = '[S]earch by [G]rep'
+  desc = '[S]earch by [G]rep',
 })
 vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>', {
-  desc = '[S]earch by [G]rep on Git Root'
+  desc = '[S]earch by [G]rep on Git Root',
 })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, {
-  desc = '[S]earch [D]iagnostics'
+  desc = '[S]earch [D]iagnostics',
 })
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, {
-  desc = '[S]earch [R]esume'
+  desc = '[S]earch [R]esume',
 })
 
 -- [[ Configure Treesitter ]]
@@ -382,10 +402,10 @@ vim.defer_fn(function()
     auto_install = true,
 
     highlight = {
-      enable = true
+      enable = true,
     },
     indent = {
-      enable = true
+      enable = true,
     },
     incremental_selection = {
       enable = true,
@@ -393,8 +413,8 @@ vim.defer_fn(function()
         init_selection = '<c-space>',
         node_incremental = '<c-space>',
         scope_incremental = '<c-s>',
-        node_decremental = '<M-space>'
-      }
+        node_decremental = '<M-space>',
+      },
     },
     textobjects = {
       select = {
@@ -407,39 +427,39 @@ vim.defer_fn(function()
           ['af'] = '@function.outer',
           ['if'] = '@function.inner',
           ['ac'] = '@class.outer',
-          ['ic'] = '@class.inner'
-        }
+          ['ic'] = '@class.inner',
+        },
       },
       move = {
         enable = true,
         set_jumps = true, -- whether to set jumps in the jumplist
         goto_next_start = {
           [']m'] = '@function.outer',
-          [']]'] = '@class.outer'
+          [']]'] = '@class.outer',
         },
         goto_next_end = {
           [']M'] = '@function.outer',
-          [']['] = '@class.outer'
+          [']['] = '@class.outer',
         },
         goto_previous_start = {
           ['[m'] = '@function.outer',
-          ['[['] = '@class.outer'
+          ['[['] = '@class.outer',
         },
         goto_previous_end = {
           ['[M'] = '@function.outer',
-          ['[]'] = '@class.outer'
-        }
+          ['[]'] = '@class.outer',
+        },
       },
       swap = {
         enable = true,
         swap_next = {
-          ['<leader>a'] = '@parameter.inner'
+          ['<leader>a'] = '@parameter.inner',
         },
         swap_previous = {
-          ['<leader>A'] = '@parameter.inner'
-        }
-      }
-    }
+          ['<leader>A'] = '@parameter.inner',
+        },
+      },
+    },
   }
 end, 0)
 
@@ -459,7 +479,7 @@ local on_attach = function(_, bufnr)
 
     vim.keymap.set('n', keys, func, {
       buffer = bufnr,
-      desc = desc
+      desc = desc,
     })
   end
 
@@ -491,7 +511,7 @@ local on_attach = function(_, bufnr)
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
   end, {
-    desc = 'Format current buffer with LSP'
+    desc = 'Format current buffer with LSP',
   })
 end
 
@@ -499,46 +519,46 @@ end
 require('which-key').register {
   ['<leader>c'] = {
     name = '[C]ode',
-    _ = 'which_key_ignore'
+    _ = 'which_key_ignore',
   },
   ['<leader>d'] = {
     name = '[D]ocument',
-    _ = 'which_key_ignore'
+    _ = 'which_key_ignore',
   },
   ['<leader>g'] = {
     name = '[G]it',
-    _ = 'which_key_ignore'
+    _ = 'which_key_ignore',
   },
   ['<leader>h'] = {
     name = 'Git [H]unk',
-    _ = 'which_key_ignore'
+    _ = 'which_key_ignore',
   },
   ['<leader>r'] = {
     name = '[R]ename',
-    _ = 'which_key_ignore'
+    _ = 'which_key_ignore',
   },
   ['<leader>s'] = {
     name = '[S]earch',
-    _ = 'which_key_ignore'
+    _ = 'which_key_ignore',
   },
   ['<leader>t'] = {
     name = '[T]oggle',
-    _ = 'which_key_ignore'
+    _ = 'which_key_ignore',
   },
   ['<leader>w'] = {
     name = '[W]orkspace',
-    _ = 'which_key_ignore'
-  }
+    _ = 'which_key_ignore',
+  },
 }
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
 require('which-key').register({
   ['<leader>'] = {
-    name = 'VISUAL <leader>'
+    name = 'VISUAL <leader>',
   },
-  ['<leader>h'] = { 'Git [H]unk' }
+  ['<leader>h'] = { 'Git [H]unk' },
 }, {
-  mode = 'v'
+  mode = 'v',
 })
 
 -- mason-lspconfig requires that these setup functions are called in this order
@@ -564,43 +584,43 @@ local servers = {
   tailwindcss = {
     init_options = {
       userLanguages = {
-        elm = "html"
+        elm = 'html',
       },
     },
 
     tailwindcCSS = {
-      classAttributes = { "class", "className", "class:list", "css", "classList", "ngClass" },
+      classAttributes = { 'class', 'className', 'class:list', 'css', 'classList', 'ngClass' },
       includeLanguages = {
-        elm = "html"
+        elm = 'html',
       },
       lint = {
-        invalidTailwindDirective = "error"
+        invalidTailwindDirective = 'error',
       },
-      colorDecorators = true
-    }
+      colorDecorators = true,
+    },
   },
 
   cssls = {
     css = {
       lint = {
-        unknownAtRules = "ignore"
+        unknownAtRules = 'ignore',
       },
-      colorDecorators = true
-    }
+      colorDecorators = true,
+    },
   },
 
   lua_ls = {
     Lua = {
       workspace = {
-        checkThirdParty = false
+        checkThirdParty = false,
       },
       telemetry = {
-        enable = false
+        enable = false,
       },
       -- NOTE: toggle below to ignore Lua_LS's noisy `missing-fields` warnings
       diagnostics = { disable = { 'missing-fields' } },
-    }
-  }
+    },
+  },
 }
 
 -- Setup neovim lua configuration
@@ -614,17 +634,19 @@ capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 local mason_lspconfig = require 'mason-lspconfig'
 
 mason_lspconfig.setup {
-  ensure_installed = vim.tbl_keys(servers)
+  ensure_installed = vim.tbl_keys(servers),
 }
 
-mason_lspconfig.setup_handlers { function(server_name)
-  require('lspconfig')[server_name].setup {
-    capabilities = capabilities,
-    on_attach = on_attach,
-    settings = servers[server_name],
-    filetypes = (servers[server_name] or {}).filetypes
-  }
-end }
+mason_lspconfig.setup_handlers {
+  function(server_name)
+    require('lspconfig')[server_name].setup {
+      capabilities = capabilities,
+      on_attach = on_attach,
+      settings = servers[server_name],
+      filetypes = (servers[server_name] or {}).filetypes,
+    }
+  end,
+}
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
@@ -637,10 +659,10 @@ cmp.setup {
   snippet = {
     expand = function(args)
       luasnip.lsp_expand(args.body)
-    end
+    end,
   },
   completion = {
-    completeopt = 'menu,menuone,noinsert'
+    completeopt = 'menu,menuone,noinsert',
   },
   mapping = cmp.mapping.preset.insert {
     ['<C-n>'] = cmp.mapping.select_next_item(),
@@ -650,7 +672,7 @@ cmp.setup {
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
-      select = true
+      select = true,
     },
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
@@ -669,15 +691,9 @@ cmp.setup {
       else
         fallback()
       end
-    end, { 'i', 's' })
+    end, { 'i', 's' }),
   },
-  sources = { {
-    name = 'nvim_lsp'
-  }, {
-    name = 'luasnip'
-  }, {
-    name = 'path'
-  } }
+  sources = { { name = 'nvim_lsp' }, { name = 'luasnip' }, { name = 'path' } },
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
