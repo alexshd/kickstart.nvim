@@ -22,7 +22,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb', -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-sleuth',  -- NOTE: This is where your plugins related to LSP can be installed.
+  'tpope/vim-sleuth', -- NOTE: This is where your plugins related to LSP can be installed.
 
   --  The configuration is done below. Search for lspconfig to find it below.
   {
@@ -35,7 +35,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
       'williamboman/mason-lspconfig.nvim',
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim',       opts = {} },
+      { 'j-hui/fidget.nvim', opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -71,7 +71,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim',   opts = {} },
+  { 'folke/which-key.nvim', opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -397,16 +397,27 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, {
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'elm', 'css', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+    ensure_installed = {
+      'c',
+      'cpp',
+      'go',
+      'elm',
+      'css',
+      'lua',
+      'python',
+      'rust',
+      'tsx',
+      'javascript',
+      'typescript',
+      'vimdoc',
+      'vim',
+      'bash',
+    },
 
     auto_install = true,
+    highlight = { enable = true },
+    indent = { enable = true },
 
-    highlight = {
-      enable = true,
-    },
-    indent = {
-      enable = true,
-    },
     incremental_selection = {
       enable = true,
       keymaps = {
@@ -517,49 +528,21 @@ end
 
 -- document existing key chains
 require('which-key').register {
-  ['<leader>c'] = {
-    name = '[C]ode',
-    _ = 'which_key_ignore',
-  },
-  ['<leader>d'] = {
-    name = '[D]ocument',
-    _ = 'which_key_ignore',
-  },
-  ['<leader>g'] = {
-    name = '[G]it',
-    _ = 'which_key_ignore',
-  },
-  ['<leader>h'] = {
-    name = 'Git [H]unk',
-    _ = 'which_key_ignore',
-  },
-  ['<leader>r'] = {
-    name = '[R]ename',
-    _ = 'which_key_ignore',
-  },
-  ['<leader>s'] = {
-    name = '[S]earch',
-    _ = 'which_key_ignore',
-  },
-  ['<leader>t'] = {
-    name = '[T]oggle',
-    _ = 'which_key_ignore',
-  },
-  ['<leader>w'] = {
-    name = '[W]orkspace',
-    _ = 'which_key_ignore',
-  },
+  ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+  ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+  ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
+  ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
+  ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+  ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+  ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
+  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
 }
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
 require('which-key').register({
-  ['<leader>'] = {
-    name = 'VISUAL <leader>',
-  },
+  ['<leader>'] = { name = 'VISUAL <leader>' },
   ['<leader>h'] = { 'Git [H]unk' },
-}, {
-  mode = 'v',
-})
+}, { mode = 'v' })
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
@@ -583,40 +566,28 @@ local servers = {
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
   tailwindcss = {
     init_options = {
-      userLanguages = {
-        elm = 'html',
-      },
+      userLanguages = { elm = 'html' },
     },
 
     tailwindcCSS = {
-      classAttributes = { 'class', 'className', 'class:list', 'css', 'classList', 'ngClass' },
-      includeLanguages = {
-        elm = 'html',
-      },
-      lint = {
-        invalidTailwindDirective = 'error',
-      },
+      classAttributes = { 'class', 'className', 'css', 'classList', 'ngClass' },
+      includeLanguages = { elm = 'html' },
+      lint = { invalidTailwindDirective = 'error' },
       colorDecorators = true,
     },
   },
 
   cssls = {
     css = {
-      lint = {
-        unknownAtRules = 'ignore',
-      },
+      lint = { unknownAtRules = 'ignore' },
       colorDecorators = true,
     },
   },
 
   lua_ls = {
     Lua = {
-      workspace = {
-        checkThirdParty = false,
-      },
-      telemetry = {
-        enable = false,
-      },
+      workspace = { checkThirdParty = false },
+      telemetry = { enable = false },
       -- NOTE: toggle below to ignore Lua_LS's noisy `missing-fields` warnings
       diagnostics = { disable = { 'missing-fields' } },
     },
@@ -667,7 +638,7 @@ cmp.setup {
   mapping = cmp.mapping.preset.insert {
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-p>'] = cmp.mapping.select_prev_item(),
-    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<CR>'] = cmp.mapping.confirm {
