@@ -22,7 +22,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb', -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-sleuth', -- NOTE: This is where your plugins related to LSP can be installed.
+  'tpope/vim-sleuth',  -- NOTE: This is where your plugins related to LSP can be installed.
 
   --  The configuration is done below. Search for lspconfig to find it below.
   {
@@ -35,7 +35,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
       'williamboman/mason-lspconfig.nvim',
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',       opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -71,7 +71,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',   opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
