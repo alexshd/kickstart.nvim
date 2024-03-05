@@ -22,7 +22,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb', -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-sleuth', -- NOTE: This is where your plugins related to LSP can be installed.
+  'tpope/vim-sleuth',  -- NOTE: This is where your plugins related to LSP can be installed.
 
   --  The configuration is done below. Search for lspconfig to find it below.
   {
@@ -35,7 +35,7 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
       'williamboman/mason-lspconfig.nvim',
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',       opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -71,7 +71,10 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  {
+    'folke/which-key.nvim',
+    opts = {},
+  },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -149,20 +152,11 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
     },
   },
   {
-    'catppuccin/nvim',
-    name = 'catppuccin',
-    priority = 1000,
-
-    config = function()
-      vim.cmd.colorscheme 'catppuccin'
-    end,
-  },
-  {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     -- See `:help lualine.txt`
-    opts = { options = { icons_enabled = true } },
+    opts = { options = { icons_enabled = true, theme = 'catppuccin' } },
   },
   {
     -- "gc" to comment visual regions/lines
@@ -202,9 +196,11 @@ require('lazy').setup({ -- NOTE: First, some plugins that don't require any conf
 
 -- Set highlight on search
 vim.o.hlsearch = false
+vim.opt.showmode = false
 
 -- Make line numbers default
 vim.wo.number = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
@@ -231,13 +227,20 @@ vim.wo.signcolumn = 'yes'
 vim.o.updatetime = 250
 vim.o.timeoutlen = 300
 
+-- Configure how new splits should be opened
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
 
+vim.opt.inccommand = 'split'
 -- NOTE: You should make sure your terminal supports this
-vim.o.termguicolors = true
 
+vim.o.termguicolors = true
 vim.o.cursorline = true
+vim.opt.scrolloff = 10
+
 -- [[ Basic Keymaps ]]
 
 -- Keymaps for better default experience
@@ -289,7 +292,7 @@ require('telescope').setup {
   defaults = {
     mappings = {
       i = {
-        ['<C-u>'] = true,
+        ['<C-u>'] = false,
         ['<C-d>'] = false,
       },
     },
@@ -412,6 +415,7 @@ vim.defer_fn(function()
       'vimdoc',
       'vim',
       'bash',
+      'zig',
     },
 
     auto_install = true,
@@ -559,7 +563,7 @@ require('mason-lspconfig').setup()
 --  define the property 'filetypes' to the map in question.
 local servers = {
   -- clangd = {},
-  -- gopls = {},
+  gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
   -- tsserver = {},
@@ -632,9 +636,12 @@ cmp.setup {
       luasnip.lsp_expand(args.body)
     end,
   },
-  completion = {
-    completeopt = 'menu,menuone,noinsert',
+  window = {
+    completion = cmp.config.window.bordered(),
+    documentation = cmp.config.window.bordered(),
   },
+  completion = { completeopt = 'menu,menuone,noinsert' },
+
   mapping = cmp.mapping.preset.insert {
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-p>'] = cmp.mapping.select_prev_item(),
