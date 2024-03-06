@@ -2,18 +2,10 @@ return {
   'nvimdev/lspsaga.nvim',
 
   config = function()
-    require('lspsaga').setup {
-      finder = {
-        max_height = 0.6,
-        keys = {
-          vsplit = 'v',
-        },
-      },
-    }
+    require('lspsaga').setup {}
   end,
 
-  dependencies = {
-    'nvim-treesitter/nvim-treesitter', -- optional
-    'nvim-tree/nvim-web-devicons',     -- optional
-  },
+  dependencies = {},
+
+  vim.keymap.set('n', '<M-t>', '<CMD>:Lspsaga term_toggle<CR>'),
 }

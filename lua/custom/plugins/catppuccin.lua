@@ -5,19 +5,17 @@ return {
 
   config = function()
     require('catppuccin').setup {
-      flavour = 'macchiato',
+      flavour = 'mocha',
+      background = { -- :h background
+        light = 'latte',
+        dark = 'mocha',
+      },
       transparent_background = true,
+      term_colors = false,
 
       no_bold = false,
       no_italic = false,
       no_underlne = false,
-
-      styles = {
-        -- functions = { 'italic' },
-        -- keywords = { 'italic' },
-        -- properties = { 'altfont' },
-        types = { 'italic' },
-      },
 
       integrations = {
         cmp = true,
@@ -38,7 +36,7 @@ return {
         },
       },
     }
-    vim.cmd.colorscheme 'catppuccin-macchiato'
+    vim.cmd.colorscheme 'catppuccin-mocha'
   end,
 }
 
